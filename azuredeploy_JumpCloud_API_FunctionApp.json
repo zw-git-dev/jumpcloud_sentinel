@@ -52,10 +52,33 @@
               "metadata": {
                   "description": "The 24-character hex ID for your JumpCloud Organization found in Settings > Org Details."
             }
+        },
+        "FunctionSourceArchiveUrl": {
+            "type": "string",
+            "defaultValue": "https://github.com/zw-git-dev/jumpcloud_sentinel/archive/refs/heads/main.zip",
+            "metadata": {
+                "description": "GitHub 'Download ZIP' source for this template. The archive must include AzureFunctionJumpCloud/host.json. After forking, set this to https://github.com/YOUR_ACCOUNT/jumpcloud_sentinel/archive/refs/heads/main.zip"
+            }
+        },
+        "DeploymentScriptUri": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/zw-git-dev/jumpcloud_sentinel/main/scripts/ArmDeployment-PublishFunction.ps1",
+            "metadata": {
+                "description": "Raw URL of the deployment script (use your fork's raw URL if you changed the ARM deployment script)."
+            }
+        },
+        "deploymentScriptForceUpdateTag": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Change this to a new value and redeploy to re-run the GitHub package download step (pulls latest main.zip and updates WEBSITE_RUN_FROM_PACKAGE)."
+            }
         }
       },
       "variables": {
-          "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]"
+          "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]",
+          "deployScriptManagedIdentityName": "[concat(variables('FunctionName'), '-deployscript')]",
+          "deployScriptRoleAssignmentId": "[guid(resourceGroup().id, variables('FunctionName'), 'jumpcloud-deployscript-mi')]"
       },
       "resources": [
           {
@@ -295,6 +318,68 @@
               ],
               "properties": {
                   "shareQuota": 5120
+              }
+          },
+          {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[variables('deployScriptManagedIdentityName')]",
+              "location": "[resourceGroup().location]"
+          },
+          {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[variables('deployScriptRoleAssignmentId')]",
+              "dependsOn": [
+                  "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName'))]"
+              ],
+              "properties": {
+                  "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24')]",
+                  "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName')), '2023-01-31').principalId]",
+                  "principalType": "ServicePrincipal"
+              }
+          },
+          {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2019-06-01",
+              "name": "[concat(variables('FunctionName'), '/default/function-packages')]",
+              "dependsOn": [
+                  "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('FunctionName'), 'default')]",
+                  "[resourceId('Microsoft.Storage/storageAccounts', variables('FunctionName'))]"
+              ],
+              "properties": {
+                  "publicAccess": "None"
+              }
+          },
+          {
+              "type": "Microsoft.Resources/deploymentScripts",
+              "apiVersion": "2020-10-01",
+              "name": "PublishJumpCloudFunctionPackage",
+              "location": "[resourceGroup().location]",
+              "dependsOn": [
+                  "[resourceId('Microsoft.Authorization/roleAssignments', variables('deployScriptRoleAssignmentId'))]",
+                  "[resourceId('Microsoft.Web/sites', variables('FunctionName'))]",
+                  "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', variables('FunctionName'), 'default', 'function-packages')]"
+              ],
+              "kind": "AzurePowerShell",
+              "identity": {
+                  "type": "UserAssigned",
+                  "userAssignedIdentities": {
+                      "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName'))]": {}
+                  }
+              },
+              "properties": {
+                  "forceUpdateTag": "[parameters('deploymentScriptForceUpdateTag')]",
+                  "azPowerShellVersion": "10.4",
+                  "timeout": "PT45M",
+                  "arguments": "[concat('-ResourceGroupName ', resourceGroup().name, ' -FunctionAppName ', variables('FunctionName'), ' -StorageAccountName ', toLower(variables('FunctionName')), ' -ArchiveUrl ', parameters('FunctionSourceArchiveUrl'))]",
+                  "primaryScriptUri": "[parameters('DeploymentScriptUri')]",
+                  "cleanupPreference": "OnSuccess",
+                  "retentionInterval": "P1D",
+                  "storageAccountSettings": {
+                      "storageAccountName": "[tolower(variables('FunctionName'))]",
+                      "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', tolower(variables('FunctionName'))), '2019-06-01').keys[0].value]"
+                  }
               }
           }
       ]

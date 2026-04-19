@@ -3,9 +3,8 @@
   Builds a zip of AzureFunctionJumpCloud and publishes it with Azure CLI zip deploy.
 
 .DESCRIPTION
-  ARM template deploy sets WEBSITE_RUN_FROM_PACKAGE to Microsoft's aka.ms ZIP, so YOUR
-  local run.ps1 edits are ignored until you publish this project. This script removes
-  that app setting (if present), then runs zip deploy so Azure runs your code.
+  Optional manual zip deploy using Azure CLI. Use when you changed code locally and do not
+  want to redeploy the ARM template (the template also publishes code from GitHub automatically).
 
 .PARAMETER ResourceGroupName
   Resource group that contains the Function App.

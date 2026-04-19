@@ -13,6 +13,8 @@ Before deplying this Arm Template
 4. You will need your WorkspaceID and WorkspaceKey for the Log Analytics Workspace you want the logs to be ingested into.
 5. You will also need your JumpCloud Organization ID obtained from Jump Cloud console > Settings > Organization Profile > Copy Organization ID
 
+6. The person deploying the template must be allowed to **create role assignments** in the target resource group or subscription (for example **Owner** or **User Access Administrator** on the subscription or resource group), because the deployment grants a managed identity permission to publish the function package.
+
 **NOTE:** There maybe additional charges incurred on your Azure Subscription if you run this Azure Function
 
 #### Deployment
@@ -23,11 +25,9 @@ The simplest way to deploy is to launch the Deployment template from the Deploy 
 2. The function name needs to be globally unique, a random character generator will generate several charactors to append to your entered name. Be aware that this name is also used for the associated storage account so if your prefix is too long the template will fail validation becuase the name is longer than the permitted length for a storage Account Name.
 3. Once successfully deployed the function will start triggering within 5 minutes and the inital request to JumpCloud will be for logs since the previous midnight UTC time. 
 
-4. **Publish your function code** (required). The ARM template creates the Function App only; you must upload this repo’s `AzureFunctionJumpCloud` project so your `run.ps1` and settings are used. From this repo, after `az login`:
+4. **Function code** is published **automatically** in the same deployment: a built-in job downloads the [default GitHub `main` branch zip](https://github.com/zw-git-dev/jumpcloud_sentinel/archive/refs/heads/main.zip), packages the `AzureFunctionJumpCloud` folder, uploads it to your storage account, and sets `WEBSITE_RUN_FROM_PACKAGE` to that blob. If you **fork** the repo, set template parameters **FunctionSourceArchiveUrl** and **DeploymentScriptUri** to your fork’s zip and raw script URL. To **refresh** the published code from GitHub on a later deploy, set **deploymentScriptForceUpdateTag** to a new value (e.g. a timestamp) and redeploy the template.
 
-```powershell
-.\scripts\Deploy-JumpCloudFunction.ps1 -ResourceGroupName "<your-rg>" -FunctionAppName "<your-function-app-name>"
-```
+5. (Optional) For a local build without re-running the full ARM template, use `az login` and `.\scripts\Deploy-JumpCloudFunction.ps1` with your resource group and function app name.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fzw-git-dev%2Fjumpcloud_sentinel%2Fmain%2Fazuredeploy_JumpCloud_API_FunctionApp.json)
 
