@@ -31,5 +31,7 @@ The simplest way to deploy is to launch the Deployment template from the Deploy 
 
 **Role assignment / `RoleDefinitionDoesNotExist`:** The template parameter **ContributorRoleDefinitionGuid** must be the [Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) id ending in **`dd24c`** (not `dd247`). If you still see `dd247` in the error, Azure is using an **old copy** of the template—open the [raw JSON](https://raw.githubusercontent.com/zw-git-dev/jumpcloud_sentinel/main/azuredeploy_JumpCloud_API_FunctionApp.json), confirm `contentVersion` is **1.0.0.2** or later, then deploy again from that link or clear the portal’s custom deployment and re-paste the file.
 
+**HTTP 429 / App Service Plan throttled:** Azure is temporarily limiting **new App Service Plan** creation (Consumption) for your subscription—often after many deploys or retries. Wait **15–60+ minutes** and deploy again; try another **region** or **resource group**; remove unused Function Apps / plans from test runs; in **Help + support** → **Service and subscription limits**, check **App Service** quotas; if it keeps failing, open a ticket with Azure Support.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fzw-git-dev%2Fjumpcloud_sentinel%2Fmain%2Fazuredeploy_JumpCloud_API_FunctionApp.json)
 
