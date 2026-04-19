@@ -78,7 +78,8 @@
       "variables": {
           "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]",
           "deployScriptManagedIdentityName": "[concat(variables('FunctionName'), '-deployscript')]",
-          "deployScriptRoleAssignmentId": "[guid(resourceGroup().id, variables('FunctionName'), 'jumpcloud-deployscript-mi')]"
+          "deployScriptRoleAssignmentId": "[guid(resourceGroup().id, variables('FunctionName'), 'jumpcloud-deployscript-mi')]",
+          "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
       },
       "resources": [
           {
@@ -334,7 +335,7 @@
                   "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName'))]"
               ],
               "properties": {
-                  "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd247')]",
+                  "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionId'))]",
                   "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName')), '2023-01-31').principalId]",
                   "principalType": "ServicePrincipal"
               }
