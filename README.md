@@ -29,5 +29,7 @@ The simplest way to deploy is to launch the Deployment template from the Deploy 
 
 5. (Optional) For a local build without re-running the full ARM template, use `az login` and `.\scripts\Deploy-JumpCloudFunction.ps1` with your resource group and function app name.
 
+**Role assignment / `RoleDefinitionDoesNotExist`:** The template parameter **ContributorRoleDefinitionGuid** must be the [Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) id ending in **`dd24c`** (not `dd247`). If you still see `dd247` in the error, Azure is using an **old copy** of the template—open the [raw JSON](https://raw.githubusercontent.com/zw-git-dev/jumpcloud_sentinel/main/azuredeploy_JumpCloud_API_FunctionApp.json), confirm `contentVersion` is **1.0.0.2** or later, then deploy again from that link or clear the portal’s custom deployment and re-paste the file.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fzw-git-dev%2Fjumpcloud_sentinel%2Fmain%2Fazuredeploy_JumpCloud_API_FunctionApp.json)
 

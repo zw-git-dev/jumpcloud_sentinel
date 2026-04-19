@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "1.0.0.2",
       "parameters": {
           "FunctionName": {
               "defaultValue": "ASJC",
@@ -73,13 +73,19 @@
             "metadata": {
                 "description": "Change this to a new value and redeploy to re-run the GitHub package download step (pulls latest main.zip and updates WEBSITE_RUN_FROM_PACKAGE)."
             }
+        },
+        "ContributorRoleDefinitionGuid": {
+            "type": "string",
+            "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+            "metadata": {
+                "description": "Azure built-in Contributor role definition GUID (Azure public cloud). Must end with dd24c — not dd247. See https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor — only change for sovereign clouds using Microsoft guidance."
+            }
         }
       },
       "variables": {
           "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]",
           "deployScriptManagedIdentityName": "[concat(variables('FunctionName'), '-deployscript')]",
-          "deployScriptRoleAssignmentId": "[guid(resourceGroup().id, variables('FunctionName'), 'jumpcloud-deployscript-mi')]",
-          "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+          "deployScriptRoleAssignmentId": "[guid(resourceGroup().id, variables('FunctionName'), 'jumpcloud-deployscript-mi-v2')]"
       },
       "resources": [
           {
@@ -335,7 +341,7 @@
                   "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName'))]"
               ],
               "properties": {
-                  "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionId'))]",
+                  "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('ContributorRoleDefinitionGuid'))]",
                   "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName')), '2023-01-31').principalId]",
                   "principalType": "ServicePrincipal"
               }
