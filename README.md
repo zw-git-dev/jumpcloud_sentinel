@@ -23,6 +23,11 @@ The simplest way to deploy is to launch the Deployment template from the Deploy 
 2. The function name needs to be globally unique, a random character generator will generate several charactors to append to your entered name. Be aware that this name is also used for the associated storage account so if your prefix is too long the template will fail validation becuase the name is longer than the permitted length for a storage Account Name.
 3. Once successfully deployed the function will start triggering within 5 minutes and the inital request to JumpCloud will be for logs since the previous midnight UTC time. 
 
+4. **Publish your function code** (required). The ARM template creates the Function App only; you must upload this repo’s `AzureFunctionJumpCloud` project so your `run.ps1` and settings are used. From this repo, after `az login`:
+
+```powershell
+.\scripts\Deploy-JumpCloudFunction.ps1 -ResourceGroupName "<your-rg>" -FunctionAppName "<your-function-app-name>"
+```
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fzw-git-dev%2Fjumpcloud_sentinel%2Fmain%2Fazuredeploy_JumpCloud_API_FunctionApp.json)
 

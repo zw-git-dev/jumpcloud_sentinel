@@ -238,10 +238,6 @@
                         {
                             "name": "JumpCloudUri",
                             "value": "[parameters('JumpCloudUri')]"
-                        },
-                        {
-                            "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "https://aka.ms/sentinel-Jumpcloud-functionapp"
                         }
                     ],
                     "powerShellVersion": "7.4"
