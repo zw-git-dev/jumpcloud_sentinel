@@ -334,7 +334,7 @@
                   "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName'))]"
               ],
               "properties": {
-                  "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24')]",
+                  "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd247')]",
                   "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployScriptManagedIdentityName')), '2023-01-31').principalId]",
                   "principalType": "ServicePrincipal"
               }
